@@ -198,6 +198,38 @@ def get_vets():
             return jsonify(cur.fetchall())
 
 
+@app.put("/vets/<int:vet_id>")
+def update_vet(vet_id):
+    data = request.json
+    query = """
+        UPDATE Veterinarian
+        SET name=%s, phone=%s, specialization=%s, schedule=%s
+        WHERE vet_id=%s
+    """
+    conn = get_connection()
+    with conn:
+        with conn.cursor() as cur:
+            cur.execute(query, (
+                data["name"],
+                data.get("phone"),
+                data.get("specialization"),
+                data.get("schedule"),
+                vet_id
+            ))
+            conn.commit()
+            return jsonify({"message": "Vet updated"})
+
+
+@app.delete("/vets/<int:vet_id>")
+def delete_vet(vet_id):
+    conn = get_connection()
+    with conn:
+        with conn.cursor() as cur:
+            cur.execute("DELETE FROM Veterinarian WHERE vet_id=%s", (vet_id,))
+            conn.commit()
+            return jsonify({"message": "Vet deleted"})
+
+
 # ------------------------------
 # CLINIC CRUD
 # ------------------------------
@@ -253,6 +285,36 @@ def get_appointments():
         with conn.cursor() as cur:
             cur.execute("SELECT * FROM Appointment")
             return jsonify(cur.fetchall())
+
+
+@app.put("/appointments/<int:appointment_id>")
+def update_appointment(appointment_id):
+    data = request.json
+    query = """
+        UPDATE Appointment
+        SET pet_id=%s, vet_id=%s, clinic_id=%s, appointment_date=%s, notes=%s, status=%s
+        WHERE appointment_id=%s
+    """
+    conn = get_connection()
+    with conn:
+        with conn.cursor() as cur:
+            cur.execute(query, (
+                data["pet_id"], data["vet_id"], data["clinic_id"],
+                data["appointment_date"], data.get("notes"), data.get("status"),
+                appointment_id
+            ))
+            conn.commit()
+            return jsonify({"message": "Appointment updated"})
+
+
+@app.delete("/appointments/<int:appointment_id>")
+def delete_appointment(appointment_id):
+    conn = get_connection()
+    with conn:
+        with conn.cursor() as cur:
+            cur.execute("DELETE FROM Appointment WHERE appointment_id=%s", (appointment_id,))
+            conn.commit()
+            return jsonify({"message": "Appointment deleted"})
 
 
 # ------------------------------
